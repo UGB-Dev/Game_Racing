@@ -8,3 +8,6 @@
 #define LCD_MOSI 19
 #define LCD_RST  21
 #define LCD_DC   20
+#define LCD_CS_2 16 // ST7735
+#define LCD_DC_2 15 // ST7735
+#define LCD_RST_2  14 // ST7735

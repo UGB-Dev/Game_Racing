@@ -9,6 +9,7 @@
 #include "hardware/spi.h"
 #include "st7735.h"
 #include "stdlib.h"
+#include "GC9A01.h"
 
 /*
     SPI_MASTER.C 
@@ -16,19 +17,19 @@
    |        |--- MOSI (PIN 19)
    |        |--- SCK  (PIN 18)
    |        |--- RST  (PIN 21)
-   | RP2040 |--- CS   (PIN 17)
+   | RP2040 |--- CS   (PIN 16)
    |        |--- DC   (PIN 20)
    |        | 
    |________|
 
 */
 
-#define TFT_CS_H()	gpio_put(LCD_CS, 1)
-#define TFT_CS_L()	gpio_put(LCD_CS, 0)
-#define TFT_DC_D()	gpio_put(LCD_DC, 1)
-#define TFT_DC_C()	gpio_put(LCD_DC, 0)
-#define TFT_RES_H()	gpio_put(LCD_RST, 1)
-#define TFT_RES_L()	gpio_put(LCD_RST, 0)
+#define TFT_CS_H()	gpio_put(LCD_CS_2, 1)
+#define TFT_CS_L()	gpio_put(LCD_CS_2, 0)
+#define TFT_DC_D()	gpio_put(LCD_DC_2, 1)
+#define TFT_DC_C()	gpio_put(LCD_DC_2, 0)
+#define TFT_RES_H()	gpio_put(LCD_RST_2, 1)
+#define TFT_RES_L()	gpio_put(LCD_RST_2, 0)
 
 #define ST7735_COLOR565(r, g, b) (((r & 0xF8) << 8) | ((g & 0xFC) << 3) | ((b & 0xF8) >> 3))
 #define SWAP_INT16_T(a, b) { int16_t t = a; a = b; b = t; }
@@ -45,7 +46,7 @@ static uint8_t _data_rotation[4] = { ST7735_MADCTL_MX, ST7735_MADCTL_MY, ST7735_
 static uint8_t _value_rotation = 0;
 static int16_t _height = ST7735_HEIGHT, _width = ST7735_WIDTH;
 static uint8_t _xstart = ST7735_XSTART, _ystart = ST7735_YSTART;
-uint16_t BUFFER[160 * 80];
+//uint16_t BUFFER[240 * 320];
 
 // based on Adafruit ST7735 library for Arduino
 static const uint8_t
@@ -263,8 +264,7 @@ void ST7735_Init()
     TFT_CS_H();
 }
 
-void ST7735_DrawPixel(uint16_t x, uint16_t y, uint16_t color)
-{
+void ST7735_DrawPixel(uint16_t x, uint16_t y, uint16_t color){
     if((x >= _width) || (y >= _height))
         return;
 
@@ -888,13 +888,13 @@ int16_t ST7735_GetWidth(void)
 void ST7735_Print_Pixel(uint8_t X, uint8_t Y, uint16_t Color){
     if ((X>=0 && X <160) && (Y>=0 && Y<80)){
         if(Color != 0xFFFF){ // para la "transparencia" 
-            BUFFER[X+(Y*160)] = Color;
+            BUFFER_[X+(Y*160)] = Color;
         }
     }
 }
 
 void ST7735_Print_Buffer(void){
-    ST7735_DrawImage(0, 0, 160, 80, BUFFER);
+    ST7735_DrawImage(0, 0, 160, 80, BUFFER_);
     /*for(uint32_t Y=0; Y<160; Y++){
         for(uint32_t X=0; X<80; X++){
             ST7735_DrawPixel(Y, X, BUFFER[Y+(X*160)]); 
@@ -905,7 +905,16 @@ void ST7735_Print_Buffer(void){
 void ST7735_Clear_Buffer(const uint16_t* BG){
     for(uint32_t Y=0; Y<160; Y++){
         for(uint32_t X=0; X<80; X++){
-            BUFFER[Y+(X*160)] = BG[Y+(X*160)]; 
+            BUFFER_[Y+(X*160)] = BG[Y+(X*160)]; 
         }
     }
 }
+
+void ST7735_Clear_Display(uint16_t BG){
+    for(uint32_t Y=0; Y<160; Y++){
+        for(uint32_t X=0; X<80; X++){
+            BUFFER_[Y+(X*160)] = BG; 
+        }
+    }
+}
+

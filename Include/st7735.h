@@ -131,16 +131,18 @@
 #define ST7735_GMCTRN1 0xE1
 
 // Color definitions    LITLE-ENDIAN    BIG-ENDIAN
-#define	ST7735_BLACK   0x0000             
+#define	ST7735_BLACK   0x0000    
+#define	ST7735_GRAY   /*0x8430*/              0x3084
 #define	ST7735_BLUE    /*0x001F */            0x1F00
 #define	ST7735_RED     /*0xF800 */            0x00F8 
 #define	ST7735_GREEN  /* 0x07E0*/             0xE007
+#define	ST7735_DARK_GREEN  /* 0x01C5*/        0xC501
 #define ST7735_CYAN    /*0x07FF*/             0xFF07
 #define ST7735_MAGENTA /*0xF81F*/             0x1FF8  
 #define ST7735_YELLOW  /*0xFFE0*/             0xE0FF
-#define ST7735_WHITE   0xFFFF
+#define ST7735_WHITE   0xFFFE
 
-extern uint16_t BUFFER[];
+//extern uint16_t BUFFER[];
 
 void ST7735_Backlight_On(void);
 void ST7735_Backlight_Off(void);
@@ -175,6 +177,7 @@ int16_t ST7735_GetWidth(void);
 void ST7735_Print_Pixel(uint8_t X, uint8_t Y, uint16_t Color);
 void ST7735_Print_Buffer(void);
 void ST7735_Clear_Buffer(const uint16_t* BG);
+void ST7735_Clear_Display(uint16_t BG);
 
 
 #endif // __ST7735_H__

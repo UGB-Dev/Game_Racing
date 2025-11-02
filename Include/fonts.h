@@ -16,5 +16,6 @@ extern FontDef Font_11x18;
 extern FontDef Font_16x26;
 extern const uint16_t gg[];
 extern const uint16_t BackGround[];
+extern const uint16_t BG_[];
 
 #endif // __FONTS_H__

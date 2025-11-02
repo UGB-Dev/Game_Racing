@@ -42,6 +42,7 @@ add_executable(spi_master
         Resources/Master_SPI.c
         Resources/fonts.c
         Resources/st7735.c
+        Resources/GC9A01.c
         )
 
 # Pull in basic dependencies
