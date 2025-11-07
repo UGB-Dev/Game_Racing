@@ -41,8 +41,9 @@ add_executable(spi_master
         spi_master.c
         Resources/Master_SPI.c
         Resources/fonts.c
-        Resources/st7735.c
-        Resources/GC9A01.c
+        Resources/Driver_TFT/ST7735.c
+        Resources/Driver_TFT/GC9A01.c
+        Resources/Driver_TFT/ILI9341.c
         )
 
 # Pull in basic dependencies

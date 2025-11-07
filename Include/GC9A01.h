@@ -1,7 +1,7 @@
 /*
    GC9A01.h
  
- */
+*/
 
 #ifndef __GC9A01_H__
 #define __GC9A01_H__
@@ -29,7 +29,7 @@
 #define GC9A01_HBACKPORCH 24 // EJE X
 #define GC9A01_VBACKPORCH 2 // EJE Y
 #define GC9A01_WIDTH 240
-#define GC9A01_HEIGHT 240
+#define GC9A01_HEIGHT 320
 
 /* COMANDOS TFT GC9A01 */
 #define GC9A01_SWRESET 0x01 /**< Software Reset */
@@ -99,6 +99,7 @@
 #define DELAY 0x80
 extern uint16_t BUFFER_[];
 extern const uint8_t GC9A01_INIT_CMD[];
+extern uint16_t Buf[];
 
 void GC9A01_Init(void);
 static void GC9A01_Reset(void);
@@ -117,98 +118,6 @@ static void GC9A01_DrawImage(uint16_t x, uint16_t y, uint16_t w, uint16_t h, con
  void  GC9A01_Cuadro(uint16_t X, uint16_t Y, uint16_t Width, uint16_t Height, uint16_t Color);
  void GC9A01_Cuadro_Solido(uint16_t X, uint16_t Y, uint16_t Width, uint16_t Height, uint16_t Color);
  void GC9A01_Set_BG(const uint16_t* BG, uint16_t X_, uint16_t Y_, uint16_t Width, uint16_t Height);
+ void GC9A01_Print_Sprite_Trans(uint8_t X_Pos, uint8_t Y_Pos, uint16_t X_Width, uint16_t Y_Height, uint8_t X_Pos_Destino, uint8_t Y_Pos_Destino, const uint16_t* Sprite);
 
 #endif // __GC9A01_H__
-
-
-/*
-
-const uint8_t GC9A01_INIT_CMD[]={
-	53,  // 50 Comandos
-	GC9A01_INREGEN1, DELAY, 1,  // CMD 1
-	GC9A01_INREGEN2, DELAY, 1,  // CMD 2
-    0xEB, 1, 0x14,              // CMD 3
-	//GC9A01_INREGEN1, DELAY, 1,  // CMD 3
-	//GC9A01_INREGEN2, DELAY, 1,  // CMD 4
-	//0xEB, 1, 0x14,              // CMD 5
-	0x84, 1, 0x60,              // CMD 4
-	0x85, 1, 0xF7,              // CMD 5
-    0x86, 1, 0xFC,              // CMD 6  
-    0x87, 1, 0x28,              // CMD 7
-	0x88, 1, 0x0A,              // CMD 8
-	0x89, 1, 0x21,              // CMD 9
-	0x8A, 1, 0x00,              // CMD 10
-	0x8B, 1, 0x80,              // CMD 11
-	0x8C, 1, 0x01,              // CMD 12
-	0x8D, 1, 0x03,              // CMD 13
-	0x8E, 1, 0x0F,              // CMD 14
-	0x8F, 1, 0xFC,              // CMD 15
-	GC9A01_FUNCTION_CTRL,       // CMD 16
-	2, 0x00, 0x20,
-	GC9A01_MADCTL, 1, 0x48,     // CMD 17 
-	GC9A01_COLMOD, 1, 0x05,     // CMD 18 DBI (MODO BUS)
-	0x90, 4, 0x08, 0x08,        // CMD 19 (no existe el comando en hoja de datos)
-	0x08, 0x08,
-	GC9A01_TEWC, 1, 0x01,       // CMD 20
-    0xBD, 1, 0x06,              // CMD 21
-    0xBC, 1, 0x00,              // CMD 22
-	0xFF, 3, 0x60, 0x01, 0x04,  // CMD 23
-	GC9A01_POWER2, 1, 0x48,     // CMD 24
-	GC9A01_POWER3, 1, 0x48,     // CMD 25
-	GC9A01_POWER4, 1, 0x25,     // CMD 26
-	0xBE, 1, 0x11,              // CMD 27
-	0xE1, 2, 0x10, 0x0E,        // CMD 28
-	0xDF, 3, 0x21, 0x10, 0x02,  // CMD 29
-	GC9A01_GAMMA1, 6, 0x4B,     // CMD 30
-	0x0F, 0x0A, 0x0B, 0x15,
-	0x30,
-	GC9A01_GAMMA2, 6, 0x43,     // CMD 31
-	0x70, 0x72, 0x36, 0x37,
-	0x6F,
-	GC9A01_GAMMA3, 6, 0x4B,     // CMD 32
-	0x0F, 0x0A, 0x0B, 0x15,
-	0x30,
-	GC9A01_GAMMA4, 6, 0x43,     // CMD 33
-	0x70, 0x72, 0x36, 0x37,
-	0x6F,
-	0xED, 2, 0x1B, 0x0B,        // CMD 34
-	0xAC, 1, 0x47,              // CMD 35
-	0xAE, 1, 0x77,              // CMD 36
-    0xCD, 1, 0x63,              // CMD 37
-	0x70, 9, 0x07, 0x09, 0x04,  // CMD 38
-	0x0C, 0x0D, 0x09, 0x07,
-	0x08, 0x03,
-	GC9A01_FRAMERATE, 1, 0x34,  // CMD 39
-	0x60, 8, 0x38, 0x0B, 0x76,  // CMD 40
-	0x62,0x39, 0xF0, 0x76, 
-	0x62,
-	0x61, 8, 0x38, 0xF6, 0x76,  // CMD 41
-	0x62, 0x38, 0xF7, 0x76, 
-	0x62,
-	0x62, 12, 0x38, 0x0D, 0x71, // CMD 42
-	0xED, 0x76, 0x62, 0x38, 
-	0x0F, 0x71, 0xEF, 0x76, 
-	0x62,
-    0x63, 12, 0x38, 0x11, 0x71, // CMD 43
-	0xF1, 0x76, 0x62, 0x38, 
-	0x13, 0x71, 0xF3, 0x76, 
-	0x62,
-    0x64, 7, 0x3B ,0x29, 0xF1,  // CMD 44
-	0x01, 0xF1, 0x00, 0x0A,
-	0x66, 10, 0x3C, 0x00, 0xCD, // CMD 45
-	0x67, 0x45, 0x45, 0x10,
-	0x00, 0x00, 0x00,
-	0x67, 10, 0x00, 0x3C, 0x00, // CMD 46
-	0x00, 0x00, 0x01, 0x54,
-	0x10, 0x32, 0x98,
-	GC9A01_BLANK_PORCH_CTRL, 4, //CMD 47
-	0x08, 0x09, 0x14, 0x08,
-	0x74, 7, 0x10, 0x85, 0x80,  // CMD 48
-	0x00, 0x00, 0x4E, 0x00,
-	0x98, 2, 0x3E, 0x07,        // CMD 49
-    GC9A01_TEON, 1, 0x00,      // CMD 50
-	GC9A01_INVON, DELAY, 1,     // CMD 51
-	GC9A01_SLPOUT, DELAY, 120,   // CMD 52
-	GC9A01_DISPON, DELAY, 20    // CMD 53 Display ON
-};
-*/

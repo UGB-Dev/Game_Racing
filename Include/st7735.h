@@ -178,6 +178,10 @@ void ST7735_Print_Pixel(uint8_t X, uint8_t Y, uint16_t Color);
 void ST7735_Print_Buffer(void);
 void ST7735_Clear_Buffer(const uint16_t* BG);
 void ST7735_Clear_Display(uint16_t BG);
-
+void ST7735_Print_Sprite(uint8_t X_pos, uint8_t Y_pos, const uint16_t* Sprite, uint16_t Color);
+void ST7735_Print_Sprite_Trans(uint8_t X_Pos, uint8_t Y_Pos, uint16_t X_Width, uint16_t Y_Height, uint8_t X_Pos_Destino, uint8_t Y_Pos_Destino, const uint16_t* Sprite);
+void ST7735_Linea(uint16_t X0, uint16_t Y0, uint16_t X1, uint16_t Y1, uint16_t Color);
+void ST7735_Cuadro(uint16_t X, uint16_t Y, uint16_t Width, uint16_t Height, uint16_t Color);
+void ST7735_Cuadro_Solido(uint16_t X, uint16_t Y, uint16_t Width, uint16_t Height, uint16_t Color);
 
 #endif // __ST7735_H__
