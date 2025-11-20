@@ -57,10 +57,6 @@ const uint8_t ILI9341_INIT_CMD[]={
     0x08, 0x0F, 0x0C, 0x31, 
     0x36, 0x0F,
     ILI9341_SLPOUT, DELAY, 120,  // CMD 19 Exit Sleep
-	/*0xEF, 3, 0x03, 0x80, 0x02,  // CMD 1                        
-	0xE8,   // CMD 4	
-	ILI9341_VSCRSADD, 1, 0x00,	// CMD 13 Vertical scroll zero
-					// CMD 17 3Gamma Function Disable*/
 	ILI9341_DISPON, DELAY, 150   // CMD 20 Display on
 };
 
@@ -182,7 +178,6 @@ void ILI9341_Set_BG(const uint16_t* BG, uint16_t X_, uint16_t Y_, uint16_t Width
 			if(BG[X+(Y*Width)] != 0xFFFF){
 				BUFFER_[(X_+X)+((Y+Y_)*ILI9341_WIDTH)] = BG[X+(Y*Width)];
 			}
-             
         }
     }
 }
@@ -211,7 +206,7 @@ void ILI9341_Set_BG(const uint16_t* BG, uint16_t X_, uint16_t Y_, uint16_t Width
     }
 }
 
-void  ILI9341_Cuadro(uint16_t X, uint16_t Y, uint16_t Width, uint16_t Height, uint16_t Color){
+void ILI9341_Cuadro(uint16_t X, uint16_t Y, uint16_t Width, uint16_t Height, uint16_t Color){
      ILI9341_Linea(X, Y, X+Width, Y, Color);
      ILI9341_Linea(X, Y, X, Y+Height, Color);
      ILI9341_Linea(X+Width, Y, X+Width, Y+Height, Color);

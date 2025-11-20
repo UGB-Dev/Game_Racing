@@ -23,6 +23,7 @@
 #include "testimg.h"
 #include <stdlib.h>
 #include "ILI9341.h"
+#include <math.h>
 
 void DemoTFT(void);
 void Prueba_Func(void);
@@ -30,16 +31,24 @@ void ILI9341_Demo(void);
 
 /* SE CREAN LAS FUNCIONES PARA CONTROLAR EL SPRITE */
 #define N_Sprite 1
-#define Display_Width 160
-#define Display_Height 80
+#define Display_Width ILI9341_WIDTH
+#define Display_Height ILI9341_HEIGHT
 #define Mitad_Width ( Display_Width/2)
 #define Mitad_Height ( Display_Height/2)
 
 #define SEGMENT_ROAD 20
 #define LENGTH_ROAD 100.0f
 #define Segment_Length 2.0f
-#define POV_Y 60.0
-#define POV_X 10.0
+#define POV_Y Mitad_Width
+#define POV_X Mitad_Height
+#define PI 3.1415926535897932384626
+#define FOV 125 // GRADOS DE VISTA DE LA PISTA EN EJE X
+#define Theta (FOV*PI)/180
+#define Dist (1/tan(Theta))
+#define Coordenada_X(x) ((1+x)*Mitad_Width) 
+#define Coordenada_Y(y) ((1-y)* Mitad_Height)
+#define Coordenada_W(w) (w*Display_Width)
+
 
 float Camara = 0.0f, Foco = 2.0f, Z_;
 void Draw_Road(void);
@@ -59,8 +68,10 @@ Ventana Sprite[N_Sprite] = {29, 21, 0, 0}; // Se crea N sprite
 uint8_t r=0;
 
 typedef struct{
-    int X;
-    int Y;
+    float X;
+    float Y;
+    float Z;
+    float W_road;
 }Position;
 
 typedef struct{
@@ -69,9 +80,8 @@ typedef struct{
     uint8_t R;
 }BALL;
 
-BALL Pelota;
-
-
+Position CAMARA  ; // X, Y, Z de la camara
+Position MUNDO_3D[10]; 
 
 // dx = 35
 /*const uint16_t Pos_Sprite[][2] = {{0, 5}, {45, 5}, {85, 5}, {170, 172}, {127, 172},{85, 172}, {125, 5}, {169, 5},
@@ -96,6 +106,9 @@ const uint16_t Bird_DOWN[] = {
 };
 
 uint8_t Toggle_Franja=0, set_Franja=0;
+
+void ILI9341_Trapecio_Solido(uint16_t x1, uint16_t y2, uint16_t x4, uint16_t x2, uint16_t y1, uint16_t x3, uint16_t Color);
+uint8_t avance=0;
 
 int main(){
     //intialize stdio
@@ -123,20 +136,153 @@ int main(){
     //gpio_set_dir(LCD_DC_2, GPIO_OUT);
 
     ILI9341_Init();
-    ILI9341_Clear_Display(GC9A01_CYAN);
+    ILI9341_Clear_Display(GC9A01_GREEN);
 
     float X_POS=5, x_POS=0, X_Linea=0;
     uint8_t avance=0;
+    float X_TFT, Y_TFT;
+    float Scale;
+
+    for(uint8_t i = 0; i<10; i++ ){
+            MUNDO_3D[i].Z =  100+ i*100; 
+            Scale = Dist / MUNDO_3D[i].Z;
+            MUNDO_3D[i].X = Scale * 143;
+            MUNDO_3D[i].Y = Scale * 80;//60
+            MUNDO_3D[i].W_road = Scale * 0.05;
+        }
+    float Pendiente_Der = (ILI9341_WIDTH-(Coordenada_X( MUNDO_3D[9].X)+Coordenada_W(MUNDO_3D[9].W_road)) - \
+                           ILI9341_WIDTH-(Coordenada_X( MUNDO_3D[0].X)+Coordenada_W(MUNDO_3D[0].W_road)))/ \
+                           (Coordenada_Y( MUNDO_3D[9].Y)-Coordenada_Y( MUNDO_3D[0].Y)); //(float) (x2 - x1) / (y1 - y2);
+
+    float Pendiente_Izq = ((Coordenada_X( MUNDO_3D[9].X)+Coordenada_W(MUNDO_3D[9].W_road)) - \
+                           (Coordenada_X( MUNDO_3D[0].X)+Coordenada_W(MUNDO_3D[0].W_road)))/ \
+                           (Coordenada_Y( MUNDO_3D[9].Y)-Coordenada_Y( MUNDO_3D[0].Y)); //(float) (x3 - x4) / (y1 - y2);
 
     while(1){
-       ILI9341_Print_Buffer();
-        
+
+        /*ILI9341_Linea(0, Coordenada_Y( MUNDO_3D[0].Y), ILI9341_WIDTH-1, Coordenada_Y( MUNDO_3D[0].Y) ,ILI9341_GREEN);
+        ILI9341_Linea(0, Coordenada_Y( MUNDO_3D[1].Y), ILI9341_WIDTH-1, Coordenada_Y( MUNDO_3D[1].Y) ,ILI9341_GRAY);
+        ILI9341_Linea(0, Coordenada_Y( MUNDO_3D[2].Y), ILI9341_WIDTH-1, Coordenada_Y( MUNDO_3D[2].Y) ,ILI9341_GREEN);
+        ILI9341_Linea(0, Coordenada_Y( MUNDO_3D[3].Y), ILI9341_WIDTH-1, Coordenada_Y( MUNDO_3D[3].Y) ,ILI9341_GRAY);
+        ILI9341_Linea(0, Coordenada_Y( MUNDO_3D[4].Y), ILI9341_WIDTH-1, Coordenada_Y( MUNDO_3D[4].Y) ,ILI9341_GREEN);
+        ILI9341_Linea(0, Coordenada_Y( MUNDO_3D[5].Y), ILI9341_WIDTH-1, Coordenada_Y( MUNDO_3D[5].Y) ,ILI9341_GRAY);
+        ILI9341_Linea(0, Coordenada_Y( MUNDO_3D[6].Y), ILI9341_WIDTH-1, Coordenada_Y( MUNDO_3D[6].Y) ,ILI9341_GREEN);
+        ILI9341_Linea(0, Coordenada_Y( MUNDO_3D[7].Y), ILI9341_WIDTH-1, Coordenada_Y( MUNDO_3D[7].Y) ,ILI9341_GRAY);
+        ILI9341_Linea(0, Coordenada_Y( MUNDO_3D[8].Y), ILI9341_WIDTH-1, Coordenada_Y( MUNDO_3D[8].Y) ,ILI9341_GREEN);
+        ILI9341_Linea(0, Coordenada_Y( MUNDO_3D[9].Y), ILI9341_WIDTH-1, Coordenada_Y( MUNDO_3D[9].Y) ,ILI9341_GRAY);*/
+        ILI9341_Linea(0, 0, 20, 30,ILI9341_GRAY);
+
+        for(uint8_t i = 10; i>0; i-- ){ //aqui**
+            /*if(i==2){}
+            else{
+            if(i%2 == 0){
+
+                ILI9341_Trapecio_Solido(ILI9341_WIDTH-(Coordenada_X( MUNDO_3D[i-2].X)+Coordenada_W(MUNDO_3D[i-2].W_road)),
+                                        Coordenada_Y( MUNDO_3D[i-2].Y),
+                                        (Coordenada_X( MUNDO_3D[i-2].X)+Coordenada_W(MUNDO_3D[i-2].W_road)),
+                                        ILI9341_WIDTH-(Coordenada_X( MUNDO_3D[i-1].X)+Coordenada_W(MUNDO_3D[i-1].W_road)),
+                                        Coordenada_Y( MUNDO_3D[i-1].Y),
+                                        (Coordenada_X( MUNDO_3D[i-1].X)+Coordenada_W(MUNDO_3D[i-1].W_road)), ILI9341_GREEN);
+            }
+            else{
+                ILI9341_Trapecio_Solido(ILI9341_WIDTH-(Coordenada_X( MUNDO_3D[i-2].X)+Coordenada_W(MUNDO_3D[i-2].W_road)),
+                                        Coordenada_Y( MUNDO_3D[i-2].Y),
+                                        (Coordenada_X( MUNDO_3D[i-2].X)+Coordenada_W(MUNDO_3D[i-2].W_road)),
+                                        ILI9341_WIDTH-(Coordenada_X( MUNDO_3D[i-1].X)+Coordenada_W(MUNDO_3D[i-1].W_road)),
+                                        Coordenada_Y( MUNDO_3D[i-1].Y),
+                                        (Coordenada_X( MUNDO_3D[i-1].X)+Coordenada_W(MUNDO_3D[i-1].W_road)), ILI9341_GRAY);
+
+            }
+           }*/
+
+
+
+            for(uint16_t y=Coordenada_Y( MUNDO_3D[i-1].Y); y<ILI9341_HEIGHT-1; y++){
+            //for(uint16_t x=Coordenada_X( MUNDO_3D[i-1].X); x<(Coordenada_X( MUNDO_3D[i-1].X)+Coordenada_W(MUNDO_3D[i-1].W_road)); x++){
+                if(avance%2 == 0){
+                    if(i%2 == 0){
+                        //ILI9341_Linea(Coordenada_X( MUNDO_3D[i-1].X), y, x , y ,ILI9341_GREEN);
+                        ILI9341_Linea( (ILI9341_WIDTH-(Coordenada_X( MUNDO_3D[9].X)+Coordenada_W(MUNDO_3D[9].W_road)))+(y-Coordenada_Y( MUNDO_3D[9].Y))*Pendiente_Der, y, 
+                                       (Coordenada_X( MUNDO_3D[9].X)+Coordenada_W(MUNDO_3D[9].W_road))+ (y-Coordenada_Y( MUNDO_3D[9].Y))*Pendiente_Izq, y ,ILI9341_GRAY_1);
+                    
+                        ILI9341_Linea( (ILI9341_WIDTH-(Coordenada_X( MUNDO_3D[9].X)+Coordenada_W(MUNDO_3D[9].W_road)))+(y-Coordenada_Y( MUNDO_3D[9].Y))*Pendiente_Der, y, 
+                                        (ILI9341_WIDTH-(Coordenada_X( MUNDO_3D[9].X)+Coordenada_W(MUNDO_3D[9].W_road)))+(y-Coordenada_Y( MUNDO_3D[9].Y))*Pendiente_Der - 5, y ,ILI9341_RED);
+
+                        ILI9341_Linea( (Coordenada_X( MUNDO_3D[9].X)+Coordenada_W(MUNDO_3D[9].W_road))+ (y-Coordenada_Y( MUNDO_3D[9].Y))*Pendiente_Izq, y, 
+                                       (Coordenada_X( MUNDO_3D[9].X)+Coordenada_W(MUNDO_3D[9].W_road))+ (y-Coordenada_Y( MUNDO_3D[9].Y))*Pendiente_Izq+5, y ,ILI9341_RED);
+                    }
+                    else{
+                        ILI9341_Linea( (ILI9341_WIDTH-(Coordenada_X( MUNDO_3D[9].X)+Coordenada_W(MUNDO_3D[9].W_road)))+(y-Coordenada_Y( MUNDO_3D[9].Y))*Pendiente_Der, y, 
+                                       (Coordenada_X( MUNDO_3D[9].X)+Coordenada_W(MUNDO_3D[9].W_road))+ (y-Coordenada_Y( MUNDO_3D[9].Y))*Pendiente_Izq, y ,ILI9341_GRAY);
+
+                        ILI9341_Linea( (ILI9341_WIDTH-(Coordenada_X( MUNDO_3D[9].X)+Coordenada_W(MUNDO_3D[9].W_road)))+(y-Coordenada_Y( MUNDO_3D[9].Y))*Pendiente_Der, y, 
+                                        (ILI9341_WIDTH-(Coordenada_X( MUNDO_3D[9].X)+Coordenada_W(MUNDO_3D[9].W_road)))+(y-Coordenada_Y( MUNDO_3D[9].Y))*Pendiente_Der - 5, y ,ILI9341_WHITE);
+
+                        ILI9341_Linea( (Coordenada_X( MUNDO_3D[9].X)+Coordenada_W(MUNDO_3D[9].W_road))+ (y-Coordenada_Y( MUNDO_3D[9].Y))*Pendiente_Izq, y, 
+                                       (Coordenada_X( MUNDO_3D[9].X)+Coordenada_W(MUNDO_3D[9].W_road))+ (y-Coordenada_Y( MUNDO_3D[9].Y))*Pendiente_Izq+5, y ,ILI9341_WHITE);
+                        //ILI9341_Linea(Coordenada_X( MUNDO_3D[i-1].X), y, x , y ,ILI9341_GRAY);
+                        //ILI9341_Linea( ILI9341_WIDTH-x, y, Coordenada_X( MUNDO_3D[i-1].X) , y ,ILI9341_GRAY);
+                    }
+                }
+                else{
+                    if(i%2 == 0){
+                        ILI9341_Linea( (ILI9341_WIDTH-(Coordenada_X( MUNDO_3D[9].X)+Coordenada_W(MUNDO_3D[9].W_road)))+(y-Coordenada_Y( MUNDO_3D[9].Y))*Pendiente_Der, y, 
+                                       (Coordenada_X( MUNDO_3D[9].X)+Coordenada_W(MUNDO_3D[9].W_road))+ (y-Coordenada_Y( MUNDO_3D[9].Y))*Pendiente_Izq, y ,ILI9341_GRAY);
+
+                        ILI9341_Linea( (ILI9341_WIDTH-(Coordenada_X( MUNDO_3D[9].X)+Coordenada_W(MUNDO_3D[9].W_road)))+(y-Coordenada_Y( MUNDO_3D[9].Y))*Pendiente_Der, y, 
+                                        (ILI9341_WIDTH-(Coordenada_X( MUNDO_3D[9].X)+Coordenada_W(MUNDO_3D[9].W_road)))+(y-Coordenada_Y( MUNDO_3D[9].Y))*Pendiente_Der - 5, y ,ILI9341_WHITE);
+
+                        ILI9341_Linea( (Coordenada_X( MUNDO_3D[9].X)+Coordenada_W(MUNDO_3D[9].W_road))+ (y-Coordenada_Y( MUNDO_3D[9].Y))*Pendiente_Izq, y, 
+                                       (Coordenada_X( MUNDO_3D[9].X)+Coordenada_W(MUNDO_3D[9].W_road))+ (y-Coordenada_Y( MUNDO_3D[9].Y))*Pendiente_Izq+5, y ,ILI9341_WHITE);
+                        //ILI9341_Linea(Coordenada_X( MUNDO_3D[i-1].X), y, x , y ,ILI9341_GRAY);
+                       // ILI9341_Linea( ILI9341_WIDTH-x, y, Coordenada_X( MUNDO_3D[i-1].X) , y ,ILI9341_GRAY);
+                    }
+                    else{
+                        ILI9341_Linea( (ILI9341_WIDTH-(Coordenada_X( MUNDO_3D[9].X)+Coordenada_W(MUNDO_3D[9].W_road)))+(y-Coordenada_Y( MUNDO_3D[9].Y))*Pendiente_Der, y, 
+                                       (Coordenada_X( MUNDO_3D[9].X)+Coordenada_W(MUNDO_3D[9].W_road))+ (y-Coordenada_Y( MUNDO_3D[9].Y))*Pendiente_Izq, y ,ILI9341_GRAY_1);
+
+                        ILI9341_Linea( (ILI9341_WIDTH-(Coordenada_X( MUNDO_3D[9].X)+Coordenada_W(MUNDO_3D[9].W_road)))+(y-Coordenada_Y( MUNDO_3D[9].Y))*Pendiente_Der, y, 
+                                        (ILI9341_WIDTH-(Coordenada_X( MUNDO_3D[9].X)+Coordenada_W(MUNDO_3D[9].W_road)))+(y-Coordenada_Y( MUNDO_3D[9].Y))*Pendiente_Der - 5, y ,ILI9341_RED);
+
+                        ILI9341_Linea( (Coordenada_X( MUNDO_3D[9].X)+Coordenada_W(MUNDO_3D[9].W_road))+ (y-Coordenada_Y( MUNDO_3D[9].Y))*Pendiente_Izq, y, 
+                                       (Coordenada_X( MUNDO_3D[9].X)+Coordenada_W(MUNDO_3D[9].W_road))+ (y-Coordenada_Y( MUNDO_3D[9].Y))*Pendiente_Izq+5, y ,ILI9341_RED);
+                        //ILI9341_Linea(Coordenada_X( MUNDO_3D[i-1].X), y, x , y ,ILI9341_GREEN);
+                       // ILI9341_Linea( ILI9341_WIDTH-x, y, Coordenada_X( MUNDO_3D[i-1].X) , y ,ILI9341_GREEN);
+                    }
+                
+                }
+                
+            }
+            //}
+        } //aqui**
+
+        /*for(uint16_t y=ILI9341_HEIGHT>>1; y<ILI9341_HEIGHT-1; y++){
+            for(float x=(ILI9341_WIDTH>>1); x<(ILI9341_WIDTH>>1); x++){
+                X_TFT = (x * 10.0f) / 8.0f;
+                Y_TFT = (y * 10.0f) / 8.0f;
+                ILI9341_Print_Pixel(X_TFT, Y_TFT, ILI9341_GRAY);
+            }
+        }*/
+
+        ILI9341_Print_Buffer();
+        x_POS = 0;
+        avance++;
+    }
+}
+
+void ILI9341_Trapecio_Solido(uint16_t x1, uint16_t y2, uint16_t x4, uint16_t x2, uint16_t y1, uint16_t x3, uint16_t Color){
+    float Pendiente_Der = (float) (x2 - x1) / (y1 - y2);
+    float Pendiente_Izq = (float) (x3 - x4) / (y1 - y2);
+    for(int y = y1; y<= y2; y++){
+        int x_Izq = x2 + (y-y1)*Pendiente_Der;
+        int x_Der = x3 + (y-y1)*Pendiente_Izq;
+        ILI9341_Linea(x_Der, y, x_Izq, y, Color );
     }
 }
 
 void ILI9341_Demo(void){
     float X_POS=5, x_POS=0, X_Linea=0;
-    uint8_t avance=0;
+    
     
      for(float Y_Pos=ILI9341_HEIGHT>>1; Y_Pos < ILI9341_HEIGHT-1; Y_Pos+=0.8, X_POS+=0.8, x_POS+=0.2, X_Linea+=0.01 ){
             ILI9341_Linea(0, Y_Pos, ILI9341_WIDTH-1, Y_Pos, ILI9341_GREEN);

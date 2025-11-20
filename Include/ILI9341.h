@@ -34,6 +34,7 @@
 // Colores RGB565
 #define	ILI9341_BLACK   0x0000    
 #define	ILI9341_GRAY   /*0x8430*/              0x3084
+#define	ILI9341_GRAY_1   /*0x8430*/              0x1084
 #define	ILI9341_BLUE    /*0x001F */            0x1F00
 #define	ILI9341_RED     /*0xF800*/             0x00F8 
 #define	ILI9341_GREEN   /*0x07E0*/             0xE007
@@ -137,6 +138,5 @@ void ILI9341_Cuadro(uint16_t X, uint16_t Y, uint16_t Width, uint16_t Height, uin
 void ILI9341_Cuadro_Solido(uint16_t X, uint16_t Y, uint16_t Width, uint16_t Height, uint16_t Color);
 void ILI9341_Set_BG(const uint16_t* BG, uint16_t X_, uint16_t Y_, uint16_t Width, uint16_t Height);  
 void ILI9341_Print_Sprite_Trans(uint8_t X_Pos, uint8_t Y_Pos, uint16_t X_Width, uint16_t Y_Height, uint16_t X_Pos_Destino, uint16_t Y_Pos_Destino, const uint16_t* Sprite);
-
 
 #endif // __ILI9341_H__
