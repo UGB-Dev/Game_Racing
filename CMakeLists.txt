@@ -44,6 +44,7 @@ add_executable(spi_master
         Resources/Driver_TFT/ST7735.c
         Resources/Driver_TFT/GC9A01.c
         Resources/Driver_TFT/ILI9341.c
+        Resources/PSOne.c
         )
 
 # Pull in basic dependencies

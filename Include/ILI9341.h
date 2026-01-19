@@ -138,5 +138,6 @@ void ILI9341_Cuadro(uint16_t X, uint16_t Y, uint16_t Width, uint16_t Height, uin
 void ILI9341_Cuadro_Solido(uint16_t X, uint16_t Y, uint16_t Width, uint16_t Height, uint16_t Color);
 void ILI9341_Set_BG(const uint16_t* BG, uint16_t X_, uint16_t Y_, uint16_t Width, uint16_t Height);  
 void ILI9341_Print_Sprite_Trans(uint8_t X_Pos, uint8_t Y_Pos, uint16_t X_Width, uint16_t Y_Height, uint16_t X_Pos_Destino, uint16_t Y_Pos_Destino, const uint16_t* Sprite);
+void ILI9341_Print_Sprite_Trans_Expand(uint8_t X_Pos, uint8_t Y_Pos, uint16_t X_Width, uint16_t Y_Height, uint16_t X_Pos_Destino, uint16_t Y_Pos_Destino, const uint16_t* Sprite, uint8_t nX);
 
 #endif // __ILI9341_H__

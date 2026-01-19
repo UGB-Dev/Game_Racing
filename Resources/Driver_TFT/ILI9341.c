@@ -223,16 +223,52 @@ void  ILI9341_Cuadro_Solido(uint16_t X, uint16_t Y, uint16_t Width, uint16_t Hei
 
 void ILI9341_Print_Sprite_Trans(uint8_t X_Pos, uint8_t Y_Pos, uint16_t X_Width, uint16_t Y_Height, uint16_t X_Pos_Destino, uint16_t Y_Pos_Destino, const uint16_t* Sprite){
     for (uint16_t Y=0; Y < Y_Height; Y++) {
-        for (uint16_t X=0; X < X_Width; X++) {
-            Buf[X+(Y*X_Width)] = Sprite[(X_Pos+X)+((Y_Pos+Y)*143)]; //Se almacena la ubicacion del sprite
+        for (uint16_t X=0; X < X_Width; X++){
+            Buf[X + (Y*X_Width)] = Sprite[(X_Pos+X)+((Y_Pos+Y)*143)]; //Se almacena la ubicacion del sprite        
         }
     }
 
-    for(uint32_t Y=0; Y<X_Width; Y++){
-        for(uint32_t X=0; X<Y_Height; X++){
-            if(Buf[Y+(X*X_Width)] != 0xFFFF){
-                ILI9341_Print_Pixel(X_Pos_Destino+Y, Y_Pos_Destino+X, Buf[Y+(X*X_Width)]);
+    for(uint32_t Y=0; Y<Y_Height; Y++){
+        for(uint32_t X=0; X<X_Width; X++){
+            if(Buf[X+(Y*X_Width)] != 0xFFFF){
+                ILI9341_Print_Pixel(X_Pos_Destino+X, Y_Pos_Destino+Y, Buf[X+(Y*X_Width)]);
             }
         }
     }
+}
+
+void ILI9341_Print_Sprite_Trans_Expand(uint8_t X_Pos, uint8_t Y_Pos, uint16_t X_Width, uint16_t Y_Height, uint16_t X_Pos_Destino, uint16_t Y_Pos_Destino, const uint16_t* Sprite, uint8_t nX){
+    uint16_t aux_X=0,aux_Y=0, aux_sprite=0;
+    uint8_t nY=nX;
+    for (uint16_t Y=0; Y < Y_Height; Y++) {
+        for (uint16_t X=0; X < X_Width; X++){
+            aux_sprite = Sprite[(X_Pos+X)+((Y_Pos+Y)*143)];
+            
+            for (uint8_t N_VecesY=0; N_VecesY < nY; N_VecesY++){
+                for (uint8_t N_VecesX=0; N_VecesX < nX; N_VecesX++){
+
+                    ILI9341_Print_Pixel(X_Pos_Destino + N_VecesX + aux_X, Y_Pos_Destino + N_VecesY + aux_Y , aux_sprite);
+                }
+            }
+            aux_X +=nX;
+            
+            //Buf[(aux_X++) + ((Y)*X_Width)] = aux_sprite; //Se almacena la ubicacion del sprite
+            //Buf[(X+aux_X) + ((Y+aux_Y)*X_Width)] = aux_sprite; //Se almacena la ubicacion del sprite 
+           // Buf[(aux_X++) + ((Y+aux_Y+1)*X_Width)] = aux_sprite; //Se almacena la ubicacion del sprite  
+
+            if (X == (X_Width-1)){
+                aux_X=0;
+            }
+                     
+        }
+        aux_Y +=nY;
+    }
+
+   /* for(uint32_t Y=0; Y<Y_Height; Y++){
+        for(uint32_t X=0; X<X_Width; X++){
+            if(Buf[X+(Y*X_Width)] != 0xFFFF){
+                ILI9341_Print_Pixel(X_Pos_Destino+X, Y_Pos_Destino+Y, Buf[X+(Y*X_Width)]);
+            }
+        }
+    }*/
 }
